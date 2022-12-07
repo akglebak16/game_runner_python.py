@@ -1,5 +1,6 @@
 import pygame
 from sys import exit
+import random
 
 
 def display_score():
@@ -9,6 +10,16 @@ def display_score():
     screen.blit(score_surface, score_rect)
     return current_time
 
+
+def obsticle_movement(obsticle_list):
+    if obsticle_list:
+        for obsticle_rect in obsticle_list:
+            obsticle_rect.x -= 5
+
+            screen.blit(snail_surface, obsticle_rect)
+        return obsticle_list
+    else:
+        return []
 
 pygame.init()
 screen = pygame.display.set_mode((800, 400))
@@ -28,18 +39,25 @@ ground_surface = pygame.image.load('graphics/ground.png').convert()
 snail_surface = pygame.image.load("graphics/snail/snail1.png").convert_alpha()
 snail_rectangle = snail_surface.get_rect(bottomright=(700, 300))
 
+obsticle_tect_list = []
+
 player_surface = pygame.image.load('graphics/player/player_walk_1.png').convert_alpha()
 player_rectangle = player_surface.get_rect(midbottom=(80, 300))
 player_gravity = 0
 player_stand = pygame.image.load('graphics/player/player_stand.png').convert_alpha()
-player_stand = pygame.transform.rotozoom(player_stand,0,2)
+player_stand = pygame.transform.rotozoom(player_stand, 0, 2)
 player_stand_rect = player_stand.get_rect(center=(400, 200))
 
-game_name = test_font.render("NA ZAVOD!!!",False,(111,196,169))
-game_name_rect = game_name.get_rect(center = (400,80))
+game_name = test_font.render("NA ZAVOD!!!", False, (111, 196, 169))
+game_name_rect = game_name.get_rect(center=(400, 80))
 
-game_message = test_font.render("Press space to run", False,(11,196,169))
-game_message_rect = game_message.get_rect(center = (400,320))
+game_message = test_font.render("Press space to run", False, (11, 196, 169))
+game_message_rect = game_message.get_rect(center=(400, 320))
+
+# Timer
+obstacle_timer = pygame.USEREVENT + 1
+pygame.time.set_timer(obstacle_timer, 2000)
+
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -59,6 +77,9 @@ while True:
                 game_active = True
                 snail_rectangle.left = 800
                 start_time = int(pygame.time.get_ticks() / 1000)
+
+        if event.type == obstacle_timer and game_active:
+            obsticle_tect_list.append(snail_surface.get_rect(bottomright=(random.randint(900, 1100), 300)))
 
     if game_active:
         screen.blit(sky_surface, (0, 0))
@@ -82,20 +103,24 @@ while True:
         if player_rectangle.bottom >= 300: player_rectangle.bottom = 300
         screen.blit(player_surface, player_rectangle)
 
+        obsticle_tect_list = obsticle_movement(obsticle_tect_list)
+
         # collision
         if snail_rectangle.colliderect(player_rectangle):
             game_active = False
     else:
         screen.fill((94, 109, 162))
         screen.blit(player_stand, player_stand_rect)
-        screen.blit(game_name,game_name_rect)
+        screen.blit(game_name, game_name_rect)
         # screen.blit(game_message,game_message_rect)
-        score_message = test_font.render(f"Your Score:{score }",False, "Red")
-        score_message_rect = score_message.get_rect(center = (400,340))
+        score_message = test_font.render(f"Your Score:{score}", False, "Red")
+        score_message_rect = score_message.get_rect(center=(400, 340))
         screen.blit(game_name, game_name_rect)
 
-        if score == 0: screen.blit(game_message,game_message_rect)
-        else: screen.blit(score_message,score_message_rect)
+        if score == 0:
+            screen.blit(game_message, game_message_rect)
+        else:
+            screen.blit(score_message, score_message_rect)
     # # if player_rectangle.colliderect(snail_rectangle):
     # #     print("col")
     # mouse_pos = pygame.mouse.get_pos()
